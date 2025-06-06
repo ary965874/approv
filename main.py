@@ -1,28 +1,31 @@
 import re
+import os
 import asyncio
 import logging
 from telethon import TelegramClient, events
+from telethon.sessions import StringSession
 from telethon.errors import FloodWaitError
-from aiogram import Bot, Dispatcher, types
+from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
 
-# Configure Logging
+# Logging Setup
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-# 🔹 Credentials & Config
+# 🔹 Env Vars (load from Railway/Render)
 api_id = 23171051
-api_hash = "10331d5d712364f57ffdd23417f4513c"
-BOT_TOKEN = "7674047505:AAE4A4GwREYoQ9i5T_JX0jxAqec4grp-39g"
+api_hash = '10331d5d712364f57ffdd23417f4513c'
+BOT_TOKEN = '7674047505:AAE4A4GwREYoQ9i5T_JX0jxAqec4grp-39g'
+STRING_SESSION = "1BVtsOKEBu0aXyXwiAab6QPXtWCCa80KzmPS8TmV3zTjAapOmcHErvaYkQMRC7k_yLqOz5xp4pDzvmMdZbJ1RxTIKRZPKlPHzvBzUoiT_m8pQnS5r91E3yHDlTnGb9WCfxGmLUKUb29TnzF2y_u3eMdKsWZUxBXfoNDMkGy7ZZpIaZPJ4TluIRQmNmvBlQ9N2ZkBuPpob9J0ugZZp0dSUN4fT2CLHXE5m15sYcyEmMCmy6qXzQncbCVRfZX7Ma6qwCz-NrIfypGk5xUNQMMK2ajuBMq0UCVIvvcv82R59DngjaSOuCSCq1604JpEiFZMs36y3WPyuU6Js2PVGnsNLMZq101upxqA="
 
-destination_channel = -1002624205281 # ✅ Replace with your channel ID 
-admin_id = 123456789                   # ✅ Replace with your Telegram user ID
+destination_channel = -1002624205281  # 🔁 Change to your channel ID
+admin_id = 123456789                 # 🔁 Your Telegram ID
 
-# 🔴 Blacklist Keywords (add more if needed)
+# 🔴 Blacklist Keywords
 blacklist_keywords = ["deposit", "contact", "whatsapp", "upi", "payment", "telegram", "join"]
 
 # Initialize Clients
-userbot = TelegramClient("session", api_id, api_hash)
+userbot = TelegramClient(StringSession(STRING_SESSION), api_id, api_hash)
 bot = Bot(token=BOT_TOKEN, default=DefaultBotProperties(parse_mode="HTML"))
 dp = Dispatcher()
 media_queue = asyncio.Queue()
@@ -30,8 +33,8 @@ media_queue = asyncio.Queue()
 async def ensure_userbot_auth():
     await userbot.connect()
     if not await userbot.is_user_authorized():
-        logger.warning("🔐 Userbot not authorized, trying to log in...")
-        await userbot.start()
+        logger.warning("🔐 Not authorized. StringSession may be invalid.")
+        raise Exception("Authorization Failed")
 
 async def get_joined_channels():
     dialogs = await userbot.get_dialogs()
